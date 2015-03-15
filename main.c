@@ -9,6 +9,8 @@
 #include "scull.h"
 
 MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Sahil Aggarwal <sahil.agg15@gmail.com>");
+MODULE_DESCRIPTION("Scull Driver");
 
 unsigned int scull_major = SCULL_MAJOR;
 unsigned int scull_minor = SCULL_MINOR;
