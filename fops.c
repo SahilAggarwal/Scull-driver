@@ -10,7 +10,6 @@
 #include <asm/uaccess.h>
 #include "scull.h"
 
-
 int scull_trim(struct scull_dev *dev)
 {
 	struct scull_qset *next,*dptr;
