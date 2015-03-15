@@ -1,1 +1,0 @@
-cmd_/home/sahil/Scull-driver/scull.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/sahil/Scull-driver/scull.ko /home/sahil/Scull-driver/scull.o /home/sahil/Scull-driver/scull.mod.o
