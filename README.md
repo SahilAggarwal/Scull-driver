@@ -5,7 +5,8 @@ Chapter 3: Character Driver
 
 Very simple implementation of scull driver.
 
-Usage:
+Usage:  
+
 	o $ make
 	
 	o $ insmod scull.ko
