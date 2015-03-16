@@ -201,12 +201,12 @@ int scull_ioctl(struct file *filp,unsigned int cmd,unsigned long arg)
  	32 bit bitfield: 31st and 30th bits are direction bits
 
 	00 : IO
-	01 : IOR
-	10 : IOW
+	10 : IOR
+	01 : IOW
 	11 : IORW
 	
-	so for eg if in user space direction bits are 01 in kernel
-	it will be 10. hence read and write are reversed
+	so for eg if in user space direction bits are 10 in kernel
+	it will be 01. hence read and write are reversed
 	
 	*/
 	
