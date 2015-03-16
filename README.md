@@ -1,9 +1,8 @@
 # Scull-driver
-Reference LDD3. 
-
-Chapter 3: Character Driver
-
 Very simple implementation of scull driver.
+
+Reference LDD3. 
+Chapter 3: Character Driver
 
 Usage:  
 
@@ -19,3 +18,6 @@ Usage:
 	  This will create character file /dev/scull0
 	
 	o Info of device can be seen in /proc/scullseq
+
+
+Very detailed documentation of code coming soon.
