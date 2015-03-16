@@ -6,6 +6,20 @@
 #include <linux/proc_fs.h>
 #include <linux/slab.h>
 #include <linux/semaphore.h>
+/*<linux/rwsem.h> : can be used to use sem only
+		    when concurrent read task is allowed 
+
+                   1) void down_read(struct rw_semaphore *)
+		   2) int down_read_trylock(struct rw_semaphore *)
+		   3) void up_read (struct rw_semaphore *) 
+     
+		   1,2,3 similar for write.
+		   
+                  4) void downgrade_write(struct rw_semaphore *) 
+		     Allow readers to read once write is completed.
+		     Mostly in situation when writer lock is needed
+		     for quick change.
+                   */ 
 #include "scull.h"
 
 MODULE_LICENSE("GPL");
