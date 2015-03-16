@@ -10,6 +10,10 @@
 #include <asm/uaccess.h>
 #include "scull.h"
 
+#define CHECK_PERM			\
+	if(!capable(CAP_SYS_ADMIN))	\
+		return -EPERM;
+
 int scull_trim(struct scull_dev *dev)
 {
 	struct scull_qset *next,*dptr;
@@ -170,6 +174,125 @@ ssize_t scull_write(struct file *filp,const char __user *buf,size_t count,
 	out:
 		up(&dev->sem);
 		return retval;
+}
+
+int scull_ioctl(struct file *filp,unsigned int cmd,unsigned long arg) 
+{
+	
+	int retval = 0;
+	int tmp    = 0;
+	int err	   = 0;
+
+	/* extract the type and number bitfields, and dont
+	   decode wrong cmds: return ENOTTY before access_ok()
+	    which in user space is interpreted as INVALID CMD
+	*/
+	if(_IOC_TYPE(cmd) != SCULL_IOC_MAGIC)
+		return -ENOTTY;
+	if(_IOC_NR(cmd) > SCULL_IOC_MAXNR)
+		return -ENOTTY;
+
+	/*The direction field is a bitmask (2 bits), and 
+	VERIFY_WRITE catches R/W transfers. 'direction'
+	bitfield is user-oriented, while access_ok() is
+	kernel-oriented so direction bitfields are reversed
+	hence the conecpt of read and write.
+	
+ 	32 bit bitfield: 31st and 30th bits are direction bits
+
+	00 : IO
+	01 : IOR
+	10 : IOW
+	11 : IORW
+	
+	so for eg if in user space direction bits are 01 in kernel
+	it will be 10. hence read and write are reversed
+	
+	*/
+	
+	if(_IOC_DIR(cmd) & _IOC_READ)
+		err = !access_ok(VERIFY_WRITE,(void __user*)arg,_IOC_SIZE(cmd));
+	
+	else if(_IOC_DIR(cmd) & _IOC_WRITE)
+		err = !access_ok(VERIFY_READ,(void __user*)arg,_IOC_SIZE(cmd));
+
+	if(err)
+		return -EFAULT;
+
+	switch(cmd) {
+
+		case SCULL_IOCRESET:
+			scull_quantum = SCULL_QUANTUM;	
+			scull_qset    = SCULL_QSET;
+			break;
+
+		case SCULL_IOCSQUANTUM:    // Set: arg points to value
+			CHECK_PERM;
+			retval = __get_user(scull_quantum,(int __user*)arg);
+			break;
+
+		case SCULL_IOCSQSET:
+			CHECK_PERM;
+			retval = __get_user(scull_qset,(int __user*)arg);
+			break;
+
+		case SCULL_IOCTQUANTUM:   // Tell: arg is the value
+			CHECK_PERM;
+			scull_quantum = arg;
+			break;
+
+		case SCULL_IOCTQSET:	
+			CHECK_PERM;
+			scull_qset = arg;
+			break;
+
+		case SCULL_IOCGQUANTUM:	   // Get: arg is pointer to result
+			retval = __put_user(scull_quantum,(int __user*)arg);
+			break;
+
+		case SCULL_IOCGQSET:
+			retval = __put_user(scull_quantum,(int __user*)arg);
+			break;
+		
+		case SCULL_IOCQQUANTUM:   // Query: return value is result
+			return scull_quantum;
+
+		case SCULL_IOCQQSET:
+			return scull_qset;
+ 
+		case SCULL_IOCXQUANTUM:   // Xchange: use arg as pointer
+			CHECK_PERM;
+			tmp = scull_quantum;
+			retval = __get_user(scull_quantum,(int __user*)arg);
+			if(retval == 0)
+				retval = __put_user(tmp,(int __user *)arg);
+			break;
+
+		case SCULL_IOCXQSET:
+			CHECK_PERM;
+			tmp = scull_qset;
+			retval = __get_user(scull_qset,(int __user*)arg);
+			if(retval == 0)
+				retval = __put_user(tmp,(int __user*)arg);
+			break;
+
+		case SCULL_IOCHQUANTUM:	// Shift: Tell + Query
+			CHECK_PERM;
+			tmp = scull_quantum;
+			scull_quantum = arg;
+			return tmp;
+	
+		case SCULL_IOCHQSET:
+			CHECK_PERM;
+			tmp = scull_qset;
+			scull_qset = arg;
+			return tmp;
+
+		default:
+			return -ENOTTY;
+	}
+	return retval;
+
 }
 
 struct file_operations scull_fops = {
