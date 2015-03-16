@@ -16,15 +16,35 @@ extern unsigned int scull_quantum;
 extern unsigned int scull_qset;
 
 extern struct scull_dev *scull_devices;
+/*
+   scull_dev    scull_qset
+   ______       ______  next
+  |      |     |      |=======>
+  | data |====>| data |====||
+  |______|     |______|    ||
+  			   ||
+			-----------  Size of each Quantum =4000
+			-----------
+			-----------
+			-----------
+			-----------
+			-----------
+			    ;
+			    ;
+			  1000 Quantums
+*/
+
+
 
 struct scull_dev {
-	struct scull_qset *data;
-	int quantum;
-	int qset;
-	unsigned long size;
-	unsigned int access_key;
-	struct semaphore sem;
-	struct cdev cdev;
+	struct scull_qset *data;   // Pointer to data
+	int quantum;		   // Quantum size
+	int qset;                  // No of quantums in each struct
+	unsigned long size;        // Total size of device
+	unsigned int access_key;   // used by sculluid and scullpriv(Beginners 
+				   // can igore this)
+	struct semaphore sem;      // mutex semaphore
+	struct cdev cdev;          // char device structure
 };
 
 struct scull_qset {

@@ -57,7 +57,25 @@ ssize_t scull_read(struct file *filp,char __user *buf,size_t count,loff_t *f_pos
 	int itemsize = quantum * qset;
 	int item, s_pos, q_pos, rest;
 	ssize_t retval = 0;
+
+	/* Critical Section: using seamphore to 
+	   avoid race conditions b/w threads 
+	   accessing same data structures. Since our
+	   scull device is not holding any other resource
+	   which it need to release so it can go to sleep.
+	   Therefore that locking mechanism should be used 
+	    in which process can sleep hence SEMAPHORES.
 	
+          P functions are called "down" which has 3 variations:
+	   => down() : decrements the value of semaphore and wait
+		       as long as needed.
+           => down_interruptible() : decrements the value of semaphore
+				     but the operation is interruptible
+	   => down_trylock : if semaphore not availble at time of call
+			    , returns immediately.
+	   P functions calling indicate that thread is ready to execute
+	   in critical section */	
+
 	if(down_interruptible(&dev->sem)) 
 		return -ERESTARTSYS;
 	if(*f_pos >= dev->size)
@@ -88,6 +106,8 @@ ssize_t scull_read(struct file *filp,char __user *buf,size_t count,loff_t *f_pos
 	retval = count;
 	
 	out:
+		/* release the semaphore since the mutex section is
+		   complete */
 		up(&dev->sem);
 		return retval;
 	

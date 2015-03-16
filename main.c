@@ -47,6 +47,9 @@ static int __init scull_init(void)
 	memset(scull_devices,0,sizeof(struct scull_dev)*scull_nr_devs);
 
 	for(i=0;i<scull_nr_devs;i++) {
+		scull_devices[i].quantum = scull_quantum;
+		scull_devices[i].qset = scull_qset;
+		/* initialize semaphore: set value to 1 */
 		sema_init(&scull_devices[i].sem,1);
 		scull_setup_dev(&scull_devices[i],i);
 	}
